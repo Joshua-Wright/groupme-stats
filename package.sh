@@ -19,7 +19,7 @@ cat > ${BINARY_NAME}.sh << EOF
 #!/bin/sh
 STANDALONE_DIR="\$(dirname \$(readlink -f \$0))"
 LD_LIBS=\$(echo -n \$(find \${STANDALONE_DIR}/lib/ -type f) |tr ' ' ':')
-LD_PRELOAD=\${LD_LIBS} \${STANDALONE_DIR}/groupme-stuff
+LD_PRELOAD=\${LD_LIBS} \${STANDALONE_DIR}/groupme-stuff \$*
 EOF
 chmod +x ${BINARY_NAME}.sh
 

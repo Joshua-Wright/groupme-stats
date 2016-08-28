@@ -12,6 +12,7 @@ import qualified Data.Set                   as S
 import qualified Data.Text                  as T
 import qualified Data.Text.IO               as T
 import           GHC.Generics
+import           GHC.IO.Encoding
 import qualified Group                      as G
 import qualified LocalData                  as L
 import           Maths
@@ -81,4 +82,7 @@ action _ = do
     putStrLn "Invalid command"
     action ["help"]
 
-main = getArgs >>= action
+main = do
+    -- this is needed or else writing to file sometimes fails on other systems
+    setLocaleEncoding utf8
+    getArgs >>= action
