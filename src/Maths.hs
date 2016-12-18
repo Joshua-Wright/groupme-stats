@@ -1,8 +1,10 @@
 {-# LANGUAGE DeriveGeneric     #-}
+{-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Maths where
-import           Prelude  hiding (show)
-import           BasicPrelude (show)
+import           BasicPrelude (tshow)
+import           Prelude hiding (show)
+-- import qualified BasicPrelude as BP
 import qualified Data.Aeson                 as A
 import qualified Data.ByteString.Lazy.Char8 as B
 import           Data.Function
@@ -22,6 +24,8 @@ import qualified Message                    as M
 import qualified User                       as U
 import Debug.Trace
 
+-- show = BP.show
+
 
 allRawText :: L.LocalData -> T.Text
 allRawText l = T.unlines $ catMaybes $ map M.text $ L.messages l
@@ -39,13 +43,13 @@ wordFrequency l = T.unlines $ map lineToDat $ sortBy (comparing $ Down . snd) wo
     where
         rawText = allRawText l
         wordFrequency = groupByFrequency $ T.words rawText
-        lineToDat (a,b) = T.unwords [show b, a]
+        lineToDat (a,b) = T.unwords [tshow b, a]
 
 allTimes :: L.LocalData -> T.Text
 allTimes l = T.intercalate "\n" times
     where
         msgs = L.messages l
-        times = map (show . posixSecondsToUTCTime . fromIntegral . M.created_at) msgs
+        times = map (tshow . posixSecondsToUTCTime . fromIntegral . M.created_at) msgs
 
 -- list of user IDs to .dat of their frequency
 likesGivenByUser :: L.LocalData -> T.Text
@@ -84,7 +88,7 @@ userIdToName l = foldr (\u acc -> Map.insert (U.user_id u) (U.nickname u) acc) M
 usagePerTime :: L.LocalData -> T.Text
 usagePerTime l = T.unlines $ map toDatLine $ zip [0..] $ usagePerTimeData $ L.messages l
     where
-        toDatLine (a,b) = T.unwords [show a, show b ]
+        toDatLine (a,b) = T.unwords [tshow a, tshow b ]
 
 usagePerTimePerUser :: L.LocalData -> T.Text
 usagePerTimePerUser l = T.unlines $ (header : (map toDatLine $ transpose allUserData))
@@ -97,7 +101,7 @@ usagePerTimePerUser l = T.unlines $ (header : (map toDatLine $ transpose allUser
         allUserData :: [[Int]]
         allUserData = [0..23] : map usagePerUser userIds
         toDatLine :: [Int] -> T.Text
-        toDatLine xs = T.unwords $ map show xs
+        toDatLine xs = T.unwords $ map tshow xs
         -- 
         msgs = L.messages l
         userMap = userIdToName l
@@ -128,7 +132,7 @@ allLikesGivenByUserToUser :: L.LocalData -> T.Text
 allLikesGivenByUserToUser l = T.unlines $ (header : (map toDatLine $ map likesByUser userIds))
     where
         header = T.unwords $ "\"\"" : (map (escape . userName) userIds)
-        likesByUser userId = (escape . userName) userId : (map show $ likesGivenByUserToUserData l userId)
+        likesByUser userId = (escape . userName) userId : (map tshow $ likesGivenByUserToUserData l userId)
         toDatLine = T.unwords
         -- 
         userIds = map U.user_id $ G.members $ L.group l
@@ -145,7 +149,7 @@ likesGivenByUserToUserData l userId = likeCombos
         msgs = L.messages l
 
 allMessageLengths :: L.LocalData -> T.Text
-allMessageLengths l = T.unlines $ map show $ lengths
+allMessageLengths l = T.unlines $ map tshow $ lengths
     where
         -- not actually *all* message lengths, just the 90th percentile
         msgs = L.messages l
@@ -204,9 +208,9 @@ escape str =T.concat ["\"", T.concatMap escapeChar str, "\""]
 
 numPairListToDat :: (Num a, Show a) => [(a,a)] -> T.Text
 numPairListToDat xs = T.intercalate "\n" $ map toLine xs
-    where toLine (a,b) = T.concat [show a, " ", show b]
+    where toLine (a,b) = T.concat [tshow a, " ", tshow b]
 
 assocListToDat :: (Num a, Show a) => [(T.Text, a)] -> T.Text
 assocListToDat xs = T.intercalate "\n" $ map toLine $ zip [1..] xs
     where
-        toLine (idx, (label, content)) = T.concat [show idx, " ", escape label, " ", show content]
+        toLine (idx, (label, content)) = T.concat [tshow idx, " ", escape label, " ", tshow content]
