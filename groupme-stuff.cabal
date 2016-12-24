@@ -24,7 +24,7 @@ executable groupme-stuff
                 unix-time >=0.3.6,
                 time >=1.6.0.1,
                 HTTP >=4000.3.3,
-                http-conduit >=2.2.0,
+                http-conduit >=2.1.0,
                 basic-prelude >=0.5.2,
                 random >=1.1
   hs-source-dirs:      src
