@@ -87,5 +87,5 @@ downloadOlderThan apiKey groupId targetMsg msgSet
 
 saveData :: String -> G.Group -> [M.Message] -> IO ()
 saveData outputFile g m = do
-    let localData = L.LocalData g m
+    let localData = L.makeLocalData g m
     B.writeFile outputFile $ A.encode localData

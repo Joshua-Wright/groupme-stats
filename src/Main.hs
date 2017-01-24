@@ -36,14 +36,14 @@ stats filePath = do
     localData <- openDataFile filePath
     putStrLn $ "Message count: " ++ (show . length . L.messages) localData
     createDirectoryIfMissing False outputFolder
-    T.writeFile (outputFolder </> "likesReceivedByUser.dat") $ likesReceivedByUser localData
-    T.writeFile (outputFolder </> "likesGivenByUser.dat") $ likesGivenByUser localData
-    T.writeFile (outputFolder </> "usagePerHour.dat") $ usagePerTime localData
-    T.writeFile (outputFolder </> "usagePerTimePerUser.dat") $ usagePerTimePerUser localData
-    T.writeFile (outputFolder </> "allRawText.dat") $ allRawText localData
-    T.writeFile (outputFolder </> "wordFrequency.dat") $ wordFrequency localData
+    T.writeFile (outputFolder </> "likesReceivedByUser.dat"      ) $ likesReceivedByUser       localData
+    T.writeFile (outputFolder </> "likesGivenByUser.dat"         ) $ likesGivenByUser          localData
+    T.writeFile (outputFolder </> "usagePerHour.dat"             ) $ usagePerTime              localData
+    T.writeFile (outputFolder </> "usagePerTimePerUser.dat"      ) $ usagePerTimePerUser       localData
+    T.writeFile (outputFolder </> "allRawText.dat"               ) $ allRawText                localData
+    T.writeFile (outputFolder </> "wordFrequency.dat"            ) $ wordFrequency             localData
     T.writeFile (outputFolder </> "allLikesGivenByUserToUser.dat") $ allLikesGivenByUserToUser localData
-    T.writeFile (outputFolder </> "allMessageLengths.dat") $ allMessageLengths localData
+    T.writeFile (outputFolder </> "allMessageLengths.dat"        ) $ allMessageLengths         localData
 
 action :: [String] -> IO()
 action ["stats", filePath] = stats filePath

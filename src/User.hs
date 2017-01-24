@@ -1,13 +1,15 @@
 {-# LANGUAGE DeriveGeneric #-}
-module User(User(..)) where
+module User(User(..),UserId) where
 import           Data.Text
 import           Data.Aeson
 import           GHC.Generics
 import           Prelude      hiding (id)
 
+
+type UserId = Text
 data User = User {
-      user_id   :: Text
-    , id        :: Text
+      user_id   :: UserId
+    , id        :: Text -- no clue what this one is
     , nickname  :: Text
     , image_url :: Maybe Text
     , muted     :: Bool
