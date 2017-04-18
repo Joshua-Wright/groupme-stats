@@ -8,7 +8,6 @@ import           Data.Aeson
 import           Data.Text
 import           GHC.Generics
 import qualified User as U
-import qualified Message as Msg
 import           Prelude      hiding (id)
 
 data Group = Group {

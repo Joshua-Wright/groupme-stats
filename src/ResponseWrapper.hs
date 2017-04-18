@@ -1,8 +1,7 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE FlexibleInstances #-}
-module ResponseWrapper(ResponseWrapper(..), MessageResponseWrapper(..), MessageList(..)) where
+module ResponseWrapper(ResponseWrapper(..), MessageResponseWrapper, MessageList(..)) where
 import           Data.Aeson
-import           Data.Text
 import           GHC.Generics
 import qualified Group        as G
 import qualified Message      as M

@@ -2,28 +2,25 @@
 {-# LANGUAGE NoImplicitPrelude #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Maths where
-import           BasicPrelude (tshow)
-import           Prelude hiding (show)
+import           BasicPrelude          (tshow)
+import           Prelude               hiding (show)
 -- import qualified BasicPrelude as BP
-import qualified Data.Aeson                 as A
-import qualified Data.ByteString.Lazy.Char8 as B
 import           Data.Function
 import           Data.List
-import           Data.Ratio
-import qualified Data.Map.Strict            as Map
-import qualified Data.Set            as Set
+import qualified Data.Map.Strict       as Map
 import           Data.Maybe
 import           Data.Ord
-import qualified Data.Text                  as T
-import qualified Data.Text.IO               as T
+import           Data.Ratio
+import qualified Data.Set              as Set
+import qualified Data.Text             as T
 import           Data.Time.Clock
 import           Data.Time.Clock.POSIX
 import           GHC.Generics
-import qualified Group                      as G
-import qualified LocalData                  as L
-import qualified Message                    as M
-import qualified User                       as U
-import Debug.Trace
+import qualified Group                 as G
+import qualified LocalData             as L
+import qualified Message               as M
+import qualified User                  as U
+-- import Debug.Trace
 
 data Like = Like {
       messageId       :: M.MessageId
@@ -33,7 +30,7 @@ data Like = Like {
 
 likesForMessage :: M.Message -> [Like]
 likesForMessage m = map (\uid -> defaultLike{userIdLiked=uid}) $ M.favorited_by m
-    where 
+    where
         defaultLike = Like {
               messageId       = M.id m
             , userIdRecipient = M.user_id m
@@ -64,14 +61,14 @@ escape str =T.concat ["\"", T.concatMap escapeChar str, "\""]
         escapeChar '\"' = "\\\""
         escapeChar '\n' = "\\n"
         escapeChar '\t' = "\\t"
-        escapeChar '_' = "\\_"
+        escapeChar '_'  = "\\_"
         escapeChar x    = T.pack [x]
 
-numPairListToDat :: (Num a, Show a) => [(a,a)] -> T.Text
+numPairListToDat :: Show a => [(a,a)] -> T.Text
 numPairListToDat xs = T.intercalate "\n" $ map toLine xs
     where toLine (a,b) = T.concat [tshow a, " ", tshow b]
 
-assocListToDat :: (Num a, Show a) => [(T.Text, a)] -> T.Text
+assocListToDat :: Show a => [(T.Text, a)] -> T.Text
 assocListToDat xs = T.intercalate "\n" $ map toLine $ zip [1..] xs
     where
         toLine (idx, (label, content)) = T.concat [tshow idx, " ", escape label, " ", tshow content]
@@ -164,7 +161,7 @@ usagePerTimePerUser l = T.unlines $ (header : (map toDatLine $ transpose allUser
         allUserData = [0..23] : map usagePerUser userIds
         toDatLine :: [Int] -> T.Text
         toDatLine xs = T.unwords $ map tshow xs
-        -- 
+        --
         msgs = L.messages l
         userName = L.userIdToName l
 
@@ -212,6 +209,6 @@ messagesByUser :: T.Text -> [M.Message] -> [M.Message]
 messagesByUser userId msgs = filter pred msgs
     where pred = ((== userId) . M.user_id)
 messagesOfLengthByUser :: T.Text -> Int -> Int -> [M.Message] -> Int
-messagesOfLengthByUser userId minLen maxLen msgs = 
+messagesOfLengthByUser userId minLen maxLen msgs =
     length $ messagesOfLength minLen maxLen $ messagesByUser userId msgs
 

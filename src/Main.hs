@@ -1,37 +1,34 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
-import qualified Data.Aeson                 as A
+import qualified Data.Aeson as A
 import qualified Data.ByteString.Lazy.Char8 as B
-import           Data.Function
 import           Data.List
-import qualified Data.Map.Lazy              as Map
-import           Data.Maybe
 import           Data.Ord
-import qualified Data.Set                   as S
-import qualified Data.Text                  as T
-import qualified Data.Text.IO               as T
-import           GHC.Generics
+import qualified Data.Set as S
+import qualified Data.Text as T
+import qualified Data.Text.IO as T
 import           GHC.IO.Encoding
-import qualified Group                      as G
-import qualified LocalData                  as L
+import qualified Group as G
+import qualified LocalData as L
 import           Maths
-import qualified Message                    as M
+import qualified Message as M
 import           RemoteApiClient
 import           System.Directory
 import           System.Environment
 import           System.FilePath
-import qualified User                       as U
 
 
 outputFolder :: String
 outputFolder = "data"
 
+openDataFile :: String -> IO L.LocalData
 openDataFile filePath = do
     contents <- B.readFile filePath
     let Just localData = A.decode contents :: Maybe L.LocalData
     return localData
 
+stats :: String -> IO ()
 stats filePath = do
     localData <- openDataFile filePath
     putStrLn $ "Message count: " ++ (show . length . L.messages) localData
@@ -82,6 +79,7 @@ action _ = do
     putStrLn "Invalid command"
     action ["help"]
 
+main :: IO ()
 main = do
     -- this is needed or else writing to file sometimes fails on other systems
     setLocaleEncoding utf8

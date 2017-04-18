@@ -1,31 +1,29 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 module RemoteApiClient where
-import qualified Data.Aeson                 as A
-import qualified Data.Text                  as T
-import qualified Data.Set                   as S
+import qualified Data.Aeson as A
 import qualified Data.ByteString.Lazy.Char8 as B
 import           Data.List
-import           Data.Time.Clock.POSIX
 import           Data.Ord
-import qualified Data.Map.Strict              as Map
-import           Data.Maybe
+import qualified Data.Set as S
+import qualified Data.Text as T
 import           Data.Time.Clock.POSIX
-import           GHC.Generics
-import qualified Group                      as G
-import qualified LocalData                  as L
-import qualified Message                    as M
-import ResponseWrapper
+import qualified Group as G
+import qualified LocalData as L
+import qualified Message as M
 import           Network.HTTP.Conduit
-import qualified User                       as U
+import           ResponseWrapper
 
+baseUrl :: String
 baseUrl = "https://api.groupme.com/v3"
 
+getGroups :: String -> IO [G.Group]
 getGroups apiKey = do
     bs <- simpleHttp $ baseUrl ++ "/groups" ++ "?token=" ++ apiKey
     let Just (ResponseWrapper groups) = A.decode bs :: Maybe (ResponseWrapper [G.Group])
     return groups
 
+getMessages :: String -> String -> IO [M.Message]
 getMessages apiKey groupId = do
     let requestUrl = concat [ baseUrl
                             , "/groups/", groupId, "/messages"
@@ -46,7 +44,7 @@ downloadMore apiKey groupId msgs
         moreMsgs <- getAllMessagesBefore apiKey groupId oldestMessageId
         return (msgs ++ moreMsgs)
 
-getAllMessagesBefore :: String -> String -> String -> IO ([M.Message])
+getAllMessagesBefore :: String -> String -> String -> IO [M.Message]
 getAllMessagesBefore apiKey groupId beforeId = do
     let requestUrl = concat [ baseUrl
                             , "/groups/", groupId, "/messages"
@@ -59,6 +57,7 @@ getAllMessagesBefore apiKey groupId beforeId = do
     moreMsgs <- downloadMore apiKey groupId msgs
     return (moreMsgs)
 
+getAllMessages :: String -> String -> IO [M.Message]
 getAllMessages apiKey groupId = do
     firstMsgs <- getMessages apiKey groupId
     downloadMore apiKey groupId firstMsgs
