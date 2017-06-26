@@ -17,6 +17,7 @@ import           RemoteApiClient
 import           System.Directory
 import           System.Environment
 import           System.FilePath
+import           System.Process
 
 
 outputFolder :: String
@@ -28,19 +29,39 @@ openDataFile filePath = do
     let Just localData = A.decode contents :: Maybe L.LocalData
     return localData
 
+statFunctions :: [(String, L.LocalData -> T.Text)]
+statFunctions =
+  [ ("likesReceivedByUser.dat",       likesReceivedByUser)
+  , ("likesGivenByUser.dat",          likesGivenByUser)
+  , ("usagePerHour.dat",              usagePerTime)
+  , ("usagePerTimePerUser.dat",       usagePerTimePerUser)
+  , ("allRawText.dat",                allRawText)
+  , ("wordFrequency.dat",             wordFrequency)
+  , ("allLikesGivenByUserToUser.dat", allLikesGivenByUserToUser)
+  , ("allMessageLengths.dat",         allMessageLengths)
+  ]
+
+runStatFunction :: L.LocalData -> (String, L.LocalData -> T.Text) -> IO ()
+runStatFunction localData (file, func) = T.writeFile (outputFolder </> file) $ func localData
+
+gnuplotFolder = "gnuplot"
+
+runGnuplot :: IO ()
+runGnuplot = do
+  scripts <- listDirectory gnuplotFolder
+  mapM_ runScript $ filter (isSuffixOf ".gnu") scripts
+  where
+    runScript path = do
+      (_, _, _, h) <- createProcess $ (proc gnuplotFolder [path]){cwd = Just gnuplotFolder}
+      waitForProcess h
+
 stats :: String -> IO ()
 stats filePath = do
     localData <- openDataFile filePath
     putStrLn $ "Message count: " ++ (show . length . L.messages) localData
     createDirectoryIfMissing False outputFolder
-    T.writeFile (outputFolder </> "likesReceivedByUser.dat"      ) $ likesReceivedByUser       localData
-    T.writeFile (outputFolder </> "likesGivenByUser.dat"         ) $ likesGivenByUser          localData
-    T.writeFile (outputFolder </> "usagePerHour.dat"             ) $ usagePerTime              localData
-    T.writeFile (outputFolder </> "usagePerTimePerUser.dat"      ) $ usagePerTimePerUser       localData
-    T.writeFile (outputFolder </> "allRawText.dat"               ) $ allRawText                localData
-    T.writeFile (outputFolder </> "wordFrequency.dat"            ) $ wordFrequency             localData
-    T.writeFile (outputFolder </> "allLikesGivenByUserToUser.dat") $ allLikesGivenByUserToUser localData
-    T.writeFile (outputFolder </> "allMessageLengths.dat"        ) $ allMessageLengths         localData
+    mapM_ (runStatFunction localData) statFunctions
+    runGnuplot
 
 action :: [String] -> IO()
 action ["stats", filePath] = stats filePath
@@ -66,7 +87,7 @@ action ["update", apiKey, dataPath] = do
     putStrLn $ "Downloaded approx " ++ (show $ length newMsgsSet) ++ " messages"
     let allmsgs      = S.toList $ S.union newMsgsSet $ S.fromList oldmsgs
         newLocalData = localData { L.messages=allmsgs }
-    putStrLn $ (show $ length allmsgs) ++ " total messages"
+    putStrLn $ show (length allmsgs) ++ " total messages"
     B.writeFile dataPath $ A.encode newLocalData
 action ["help"] = T.putStrLn $ T.unlines
     [ "Usage: groupme-stuff COMMAND [ARGS...]"

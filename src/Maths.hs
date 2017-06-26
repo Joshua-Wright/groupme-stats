@@ -44,7 +44,7 @@ likesByUser :: U.UserId -> [Like] -> [Like]
 likesByUser uid xs = filter (\x -> userIdLiked x == uid) xs
 
 likesToUser :: U.UserId -> [Like] -> [Like]
-likesToUser uid xs = filter (\x -> userIdRecipient x == uid) xs
+likesToUser uid xs = filter (\ x -> userIdRecipient x == uid) xs
 
 
 -- zip to tuples of counts, use map to group them adding the counts
@@ -82,6 +82,9 @@ gridToDat gridMap = T.unlines $ (header : (map row keys ))
         shownMap = Map.map tshow $ Map.fromList gridMap
         lookup x = Map.findWithDefault "0" x shownMap
 
+messageRawText :: [M.Message] -> T.Text
+messageRawText msgs = T.unlines $ mapMaybe M.text msgs
+
 --------
 
 
@@ -111,11 +114,11 @@ allLikesGivenByUserToUser :: L.LocalData -> T.Text
 allLikesGivenByUserToUser = gridToDat . likesGivenByUserToUserData
 
 
+allRawText :: L.LocalData -> T.Text
+allRawText = messageRawText .  L.messages
+
 
 ---------------------------------------------------------
-
-allRawText :: L.LocalData -> T.Text
-allRawText l = T.unlines $ catMaybes $ map M.text $ L.messages l
 
 rawTextByUser :: L.LocalData -> T.Text -> T.Text
 rawTextByUser l userName = T.unlines $ catMaybes $ map M.text userMsgs
@@ -126,10 +129,10 @@ rawTextByUser l userName = T.unlines $ catMaybes $ map M.text userMsgs
         userMsgs = filter ((== userId) . M.user_id) msgs
 
 wordFrequency :: L.LocalData -> T.Text
-wordFrequency l = T.unlines $ map lineToDat $ sortBy (comparing $ Down . snd) wordFrequency
+wordFrequency l = T.unlines $ map lineToDat $ sortBy (comparing $ Down . snd) wordFreqList
     where
         rawText = allRawText l
-        wordFrequency = groupByFreq $ T.words rawText
+        wordFreqList = groupByFreq $ T.words rawText
         lineToDat (a,b) = T.unwords [tshow b, a]
 
 allTimes :: L.LocalData -> T.Text
@@ -206,8 +209,8 @@ messagesOfLength minLen maxLen msgs = filter pred msgs
                              , ((<= maxLen) . T.length . (fromMaybe "") . M.text)
                              ]
 messagesByUser :: T.Text -> [M.Message] -> [M.Message]
-messagesByUser userId msgs = filter pred msgs
-    where pred = ((== userId) . M.user_id)
+messagesByUser userId msgs = filter ((== userId) . M.user_id) msgs
+
 messagesOfLengthByUser :: T.Text -> Int -> Int -> [M.Message] -> Int
 messagesOfLengthByUser userId minLen maxLen msgs =
     length $ messagesOfLength minLen maxLen $ messagesByUser userId msgs
