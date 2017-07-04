@@ -1,18 +1,18 @@
 {-# LANGUAGE DeriveGeneric     #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
-import qualified Data.Aeson as A
+import qualified Data.Aeson                 as A
 import qualified Data.ByteString.Lazy.Char8 as B
-import           Data.List
+import           Data.List                  hiding (group)
 import           Data.Ord
-import qualified Data.Set as S
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
+import qualified Data.Set                   as S
+import qualified Data.Text                  as T
+import qualified Data.Text.IO               as T
 import           GHC.IO.Encoding
-import qualified Group as G
-import qualified LocalData as L
+import qualified Group                      as G
+import qualified LocalData                  as L
 import           Maths
-import qualified Message as M
+import qualified Message                    as M
 import           RemoteApiClient
 import           System.Directory
 import           System.Environment
@@ -44,6 +44,7 @@ statFunctions =
 runStatFunction :: L.LocalData -> (String, L.LocalData -> T.Text) -> IO ()
 runStatFunction localData (file, func) = T.writeFile (outputFolder </> file) $ func localData
 
+gnuplotFolder :: FilePath
 gnuplotFolder = "gnuplot"
 
 runGnuplot :: IO ()
@@ -105,3 +106,4 @@ main = do
     -- this is needed or else writing to file sometimes fails on other systems
     setLocaleEncoding utf8
     getArgs >>= action
+
